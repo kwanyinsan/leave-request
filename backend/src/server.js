@@ -294,6 +294,28 @@ app.post('/request', requireAuth, async (req, res) => {
     }
 });
 
+// Get leave requests route
+app.get('/list', requireAuth, async (req, res) => {
+    try {
+        let result;
+
+        if (req.user.role === 'manager') {
+            result = await pool.query('SELECT * FROM leave_requests');
+        } else {
+            result = await pool.query('SELECT * FROM leave_requests WHERE user_id = $1', [req.user.id]);
+        }
+
+        res.json({
+            leaveRequests: result.rows
+        });
+    } catch (error) {
+        console.error('Failed to fetch leave requests:', error.message);
+        res.status(500).json({
+            message: 'Failed to fetch leave requests.'
+        });
+    }
+});
+
 app.listen(port, '127.0.0.1', () => {
     console.log(`Server running at http://127.0.0.1:${port}`);
 });
