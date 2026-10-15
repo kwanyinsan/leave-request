@@ -301,15 +301,17 @@ app.get('/requests', requireAuth, async (req, res) => {
 
         if (req.user.role === 'manager') {
             result = await pool.query(
-                `SELECT lr.*, u.username
+                `SELECT lr.*, u.username, u.is_deleted AS user_is_deleted
                  FROM leave_requests AS lr
-                 JOIN users u ON lr.user_id = u.id`
+                 JOIN users u ON lr.user_id = u.id
+                 ORDER BY lr.id ASC`
             );
         } else {
             result = await pool.query(
                 `SELECT *
                  FROM leave_requests 
-                 WHERE user_id = $1`,
+                 WHERE user_id = $1
+                 ORDER BY id ASC`,
                  [req.user.id]
             );
         }
@@ -350,11 +352,12 @@ app.post('/approve/:id', requireAuth, requireManager, async (req, res) => {
 
     try {
         const result = await pool.query(
-            `UPDATE leave_requests
+            `UPDATE leave_requests AS lr
              SET status = $1, decided_by = $2
-             WHERE id = $3
-             RETURNING *`,
-            [status,req.user.id, leaveRequestId]
+             FROM users AS u
+             WHERE lr.id = $3 AND lr.user_id = u.id AND u.is_deleted = false
+             RETURNING lr.*`,
+            [status, req.user.id, leaveRequestId]
         );
 
         if (result.rows.length === 0) {
@@ -381,7 +384,8 @@ app.get('/members', requireAuth, requireManager, async (req, res) => {
         const result = await pool.query(
             `SELECT id, username, role, is_deleted
              FROM users
-             WHERE role = 'member'`
+             WHERE role = 'member'
+             ORDER BY id ASC`
         );
 
         res.json({

@@ -55,6 +55,48 @@ export default function Manager({ busy, setBusy, setUser, setMessage }) {
         };
     }, [setUser, setMessage]);
 
+    useEffect(() => {
+        let ignore = false;
+
+        async function loadMembers() {
+            try {
+                const response = await fetch('/api/members');
+                const data = await response.json();
+
+                if (ignore) {
+                    return;
+                }
+
+                if (response.status === 401) {
+                    setMessage(data.message);
+                    setUser(null);
+                    return;
+                }
+
+                if (!response.ok) {
+                    setMessage(data.message);
+                    return;
+                }
+
+                setMembers(data.members);
+            } catch {
+                if (!ignore) {
+                    setMessage('Unable to load members. Please refresh to try again.');
+                }
+            } finally {
+                if (!ignore) {
+                    setMembersLoading(false);
+                }
+            }
+        }
+
+        loadMembers();
+
+        return () => {
+            ignore = true;
+        };
+    }, [setUser, setMessage]);
+
     async function handleStatusChange(requestId, status) {
         setMessage('');
         setBusy(true);
@@ -164,9 +206,25 @@ export default function Manager({ busy, setBusy, setUser, setMessage }) {
             }
 
             setMembers(listData.members);
+
+            const requestsResponse = await fetch('/api/requests');
+            const requestsData = await requestsResponse.json();
+
+            if (requestsResponse.status === 401) {
+                setMessage(requestsData.message);
+                setUser(null);
+                return;
+            }
+
+            if (!requestsResponse.ok) {
+                setMessage('Member deleted, but the request list could not refresh. Please refresh the page.');
+                return;
+            }
+
+            setLeaveRequests(requestsData.leaveRequests);
         } catch {
             if (deleted) {
-                setMessage('Member deleted, but the member list could not refresh. Please refresh the page.');
+                setMessage('Member deleted, but the list could not refresh. Please refresh the page.');
             } else {
                 setMessage('Unable to confirm deletion. Please refresh the page to check the member status.');
             }
@@ -206,29 +264,35 @@ export default function Manager({ busy, setBusy, setUser, setMessage }) {
                                 <td>{request.reason}</td>
                                 <td>{request.status}</td>
                                 <td>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleStatusChange(request.id, 'approved')}
-                                        disabled={busy}
-                                    >
-                                        Approve
-                                    </button>
+                                    {request.user_is_deleted ? (
+                                        'User account deleted'
+                                    ) : (
+                                        <>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleStatusChange(request.id, 'approved')}
+                                                disabled={busy}
+                                            >
+                                                Approve
+                                            </button>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => handleStatusChange(request.id, 'rejected')}
-                                        disabled={busy}
-                                    >
-                                        Reject
-                                    </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleStatusChange(request.id, 'rejected')}
+                                                disabled={busy}
+                                            >
+                                                Reject
+                                            </button>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => handleStatusChange(request.id, 'pending')}
-                                        disabled={busy}
-                                    >
-                                        Set pending
-                                    </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleStatusChange(request.id, 'pending')}
+                                                disabled={busy}
+                                            >
+                                                Set pending
+                                            </button>
+                                        </>
+                                    )}
                                 </td>
                             </tr>
                         ))}
