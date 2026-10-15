@@ -63,3 +63,20 @@ main.manager-view {
 .manager-view button {
     margin-bottom: 6px;
 }
+
+h1,
+h2,
+h3 {
+    color: #284b63;
+}
+
+button {
+    background-color: #e8f1f7;
+    color: #203d50;
+    border: 1px solid #9ab6c9;
+    border-radius: 4px;
+}
+
+button:disabled {
+    opacity: 0.55;
+}
