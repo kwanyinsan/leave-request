@@ -294,7 +294,7 @@ app.post('/submit', requireAuth, async (req, res) => {
     }
 });
 
-// Get leave requests route
+// List leave requests route
 app.get('/requests', requireAuth, async (req, res) => {
     try {
         let result;
@@ -375,7 +375,7 @@ app.post('/approve/:id', requireAuth, requireManager, async (req, res) => {
     }
 });
 
-// Get members route
+// List members route
 app.get('/members', requireAuth, requireManager, async (req, res) => {
     try {
         const result = await pool.query(
