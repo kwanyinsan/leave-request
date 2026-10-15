@@ -245,7 +245,7 @@ app.get('/current', requireAuth, (req, res) => {
 });
 
 // Submit leave request route
-app.post('/request', requireAuth, async (req, res) => {
+app.post('/submit', requireAuth, async (req, res) => {
     const { start_date, end_date, reason } = req.body;
 
     if (typeof start_date !== 'string' || typeof end_date !== 'string' || typeof reason !== 'string') {
@@ -312,6 +312,92 @@ app.get('/list', requireAuth, async (req, res) => {
         console.error('Failed to fetch leave requests:', error.message);
         res.status(500).json({
             message: 'Failed to fetch leave requests.'
+        });
+    }
+});
+
+// Approve or reject leave request route
+app.post('/approve/:id', requireAuth, requireManager, async (req, res) => {
+    const leaveRequestId = Number(req.params.id);
+    const { status } = req.body;
+
+    if (!Number.isInteger(leaveRequestId) || leaveRequestId <= 0) {
+        return res.status(400).json({
+            message: 'Leave request ID must be a valid number.'
+        });
+    }
+
+    if (typeof status !== 'string') {
+        return res.status(400).json({
+            message: 'Status must be a string.'
+        });
+    }
+
+    if (status !== 'approved' && status !== 'rejected' && status !== 'pending') {
+        return res.status(400).json({
+            message: 'Status must be "approved", "rejected" or "pending".'
+        });
+    }
+
+    try {
+        const result = await pool.query(
+            `UPDATE leave_requests
+             SET status = $1, decided_by = $2
+             WHERE id = $3
+             RETURNING *`,
+            [status,req.user.id, leaveRequestId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                message: 'Leave request not found.'
+            });
+        }
+
+        res.json({
+            message: 'Leave request updated successfully.',
+            leaveRequest: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Failed to update leave request:', error.message);
+        res.status(500).json({
+            message: 'Failed to update leave request.'
+        });
+    }
+});
+
+// Delete member
+app.delete('/delete/:id', requireAuth, requireManager, async (req, res) => {
+    const memberId = Number(req.params.id);
+
+    if (!Number.isInteger(memberId) || memberId <= 0) {
+        return res.status(400).json({
+            message: 'Member ID must be a valid number.'
+        });
+    }
+
+    try {
+        const result = await pool.query(
+            `UPDATE users
+             SET is_deleted = true
+             WHERE id = $1 AND role = 'member' AND is_deleted = false
+             RETURNING id, username, role, is_deleted`,
+            [memberId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                message: 'Member not found.'
+            });
+        }
+
+        res.json({
+            message: 'Member deleted successfully.'
+        });
+    } catch (error) {
+        console.error('Failed to delete member:', error.message);
+        res.status(500).json({
+            message: 'Failed to delete member.'
         });
     }
 });
