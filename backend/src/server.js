@@ -79,17 +79,6 @@ function requireManager(req, res, next) {
     next();
 }
 
-// Temporary health check route
-app.get('/health', async (req, res) => {
-    try {
-        await pool.query('SELECT 1');
-        res.json({ status: 'ok', database: 'connected' });
-    } catch (error) {
-        console.error('Health check failed:', error.message);
-        res.status(503).json({ status: 'error', database: 'unavailable' });
-    }
-});
-
 // Register route
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
