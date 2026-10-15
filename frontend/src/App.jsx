@@ -1,4 +1,5 @@
 import Member from './Member';
+import Manager from './Manager';
 import { useEffect, useState } from "react";
 
 export default function App() {
@@ -115,7 +116,7 @@ export default function App() {
     }
 
     return (
-        <main>
+        <main className={user && user.role === 'manager' ? 'manager-view' : ''}>
             <h1>Leave Request</h1>
 
             {message && <p role="status">{message}</p>}
@@ -132,6 +133,15 @@ export default function App() {
 
 					{user.role === 'member' && (
                         <Member
+                            busy={busy}
+                            setBusy={setBusy}
+                            setUser={setUser}
+                            setMessage={setMessage}
+                        />
+                    )}
+
+					{user.role === 'manager' && (
+                        <Manager
                             busy={busy}
                             setBusy={setBusy}
                             setUser={setUser}

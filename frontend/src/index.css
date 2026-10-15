@@ -55,3 +55,11 @@ td {
     vertical-align: top;
     overflow-wrap: anywhere;
 }
+
+main.manager-view {
+    max-width: 1100px;
+}
+
+.manager-view button {
+    margin-bottom: 6px;
+}
