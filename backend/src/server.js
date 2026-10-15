@@ -295,14 +295,23 @@ app.post('/submit', requireAuth, async (req, res) => {
 });
 
 // Get leave requests route
-app.get('/list', requireAuth, async (req, res) => {
+app.get('/requests', requireAuth, async (req, res) => {
     try {
         let result;
 
         if (req.user.role === 'manager') {
-            result = await pool.query('SELECT * FROM leave_requests');
+            result = await pool.query(
+                `SELECT lr.*, u.username
+                 FROM leave_requests AS lr
+                 JOIN users u ON lr.user_id = u.id`
+            );
         } else {
-            result = await pool.query('SELECT * FROM leave_requests WHERE user_id = $1', [req.user.id]);
+            result = await pool.query(
+                `SELECT *
+                 FROM leave_requests 
+                 WHERE user_id = $1`,
+                 [req.user.id]
+            );
         }
 
         res.json({
@@ -362,6 +371,26 @@ app.post('/approve/:id', requireAuth, requireManager, async (req, res) => {
         console.error('Failed to update leave request:', error.message);
         res.status(500).json({
             message: 'Failed to update leave request.'
+        });
+    }
+});
+
+// Get members route
+app.get('/members', requireAuth, requireManager, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT id, username, role, is_deleted
+             FROM users
+             WHERE role = 'member'`
+        );
+
+        res.json({
+            members: result.rows
+        });
+    } catch (error) {
+        console.error('Failed to fetch members:', error.message);
+        res.status(500).json({
+            message: 'Failed to fetch members.'
         });
     }
 });
