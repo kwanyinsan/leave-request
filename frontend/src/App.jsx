@@ -109,93 +109,126 @@ export default function App() {
 
     if (loading) {
         return (
-            <main>
-                <p>Checking session...</p>
+            <main className="session-screen">
+                <div className="card session-card" role="status">
+                    <span className="brand-mark" aria-hidden="true">LR</span>
+                    <h1>Leave Request</h1>
+                    <p className="text-muted">Checking session...</p>
+                </div>
             </main>
         );
     }
 
     return (
-        <main className={user && user.role === 'manager' ? 'manager-view' : ''}>
-            <h1>Leave Request</h1>
-
-            {message && <p role="status">{message}</p>}
-
-            {user ? (
-                <section>
-                    <h2>{user.role === "manager" ? "Manager page" : "Member page"}</h2>
-
-                    <p>Signed in as {user.username}</p>
-
-                    <button type="button" onClick={handleLogout} disabled={busy}>
-                        Logout
-                    </button>
-
-					{user.role === 'member' && (
-                        <Member
-                            busy={busy}
-                            setBusy={setBusy}
-                            setUser={setUser}
-                            setMessage={setMessage}
-                        />
+        <main className={user ? `app-shell ${user.role === 'manager' ? 'manager-view' : 'member-view'}` : 'app-shell auth-shell'}>
+            <header className="app-header">
+                <div className="app-header-inner">
+                    <div className="brand">
+                        <span className="brand-mark" aria-hidden="true">LR</span>
+                        <h1>Leave Request</h1>
+                    </div>
+                    {user && (
+                        <div className="account-tools">
+                            <p className="account-summary">
+                                <span>Signed in as</span>
+                                <strong>{user.username}</strong>
+                            </p>
+                            <span className="role-badge">
+                                {user.role === 'manager' ? 'Manager' : 'Member'}
+                            </span>
+                            <button className="button button-secondary" type="button" onClick={handleLogout} disabled={busy}>
+                                Logout
+                            </button>
+                        </div>
                     )}
+                </div>
+            </header>
 
-					{user.role === 'manager' && (
-                        <Manager
-                            busy={busy}
-                            setBusy={setBusy}
-                            setUser={setUser}
-                            setMessage={setMessage}
-                        />
-                    )}
+            <div className="page-content">
+                {message && <p className="feedback" role="status">{message}</p>}
 
-                </section>
-            ) : (
-                <section>
-                    <h2>Login or register</h2>
+                {user ? (
+                    <section aria-labelledby="page-title">
+                        <div className="page-heading">
+                            <h2 id="page-title">{user.role === "manager" ? "Manager page" : "Member page"}</h2>
+                            <p className="text-muted">
+                                {user.role === 'manager'
+                                    ? 'Review leave requests and manage member accounts.'
+                                    : 'Submit a leave request and follow its status.'}
+                            </p>
+                        </div>
 
-                    <form
-                        onSubmit={(event) => {
-                            event.preventDefault();
-                            handleAuth("login");
-                        }}
-                    >
-                        <label>
-                            Username
-                            <input
-                                type="text"
-                                name="username"
-                                value={username}
-                                onChange={(event) => setUsername(event.target.value)}
+                        {user.role === 'member' && (
+                            <Member
+                                busy={busy}
+                                setBusy={setBusy}
+                                setUser={setUser}
+                                setMessage={setMessage}
                             />
-                        </label>
+                        )}
 
-                        <label>
-                            Password
-                            <input
-                                type="password"
-                                name="password"
-                                value={password}
-                                onChange={(event) => setPassword(event.target.value)}
+                        {user.role === 'manager' && (
+                            <Manager
+                                busy={busy}
+                                setBusy={setBusy}
+                                setUser={setUser}
+                                setMessage={setMessage}
                             />
-                        </label>
+                        )}
+                    </section>
+                ) : (
+                    <section className="card auth-card" aria-labelledby="auth-title">
+                        <div className="card-header">
+                            <h2 id="auth-title">Login or register</h2>
+                            <p className="text-muted">Access your Leave Request account.</p>
+                        </div>
+                        <div className="card-body">
+                            <form
+                                className="form-stack"
+                                onSubmit={(event) => {
+                                    event.preventDefault();
+                                    handleAuth("login");
+                                }}
+                            >
+                                <label>
+                                    Username
+                                    <input
+                                        type="text"
+                                        name="username"
+                                        value={username}
+                                        onChange={(event) => setUsername(event.target.value)}
+                                    />
+                                </label>
 
-                        <button type="submit" disabled={busy}>
-                            Login
-                        </button>
+                                <label>
+                                    Password
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        value={password}
+                                        onChange={(event) => setPassword(event.target.value)}
+                                    />
+                                </label>
 
-                        <button
-                            type="button"
-                            onClick={() => handleAuth("register")}
-                            disabled={busy}
-                        >
-                            Register
-                        </button>
-                    </form>
-
-                    <p>Registration creates a member account. Log in afterward.</p>
-                </section>
-            )}
+                                <div className="auth-actions">
+                                    <button className="button button-primary" type="submit" disabled={busy}>
+                                        Login
+                                    </button>
+                                    <button
+                                        className="button button-secondary"
+                                        type="button"
+                                        onClick={() => handleAuth("register")}
+                                        disabled={busy}
+                                    >
+                                        Register
+                                    </button>
+                                </div>
+                            </form>
+                            <p className="form-help">Registration creates a member account. Log in afterward.</p>
+                        </div>
+                    </section>
+                )}
+            </div>
         </main>
     );
 }

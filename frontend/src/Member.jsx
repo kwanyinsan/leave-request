@@ -123,79 +123,98 @@ export default function Member({ busy, setBusy, setUser, setMessage }) {
     }
 
     return (
-        <section>
-            <h3>Submit leave request</h3>
+        <div className="member-layout">
+            <section className="card" aria-labelledby="request-form-title">
+                <div className="card-header">
+                    <h3 id="request-form-title">Submit leave request</h3>
+                    <p className="text-muted">Choose your dates and provide a reason.</p>
+                </div>
 
-            <form onSubmit={handleSubmit}>
-                <label>
-                    Start date
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(event) => setStartDate(event.target.value)}
-                        required
-                    />
-                </label>
+                <form className="card-body form-stack" onSubmit={handleSubmit}>
+                    <div className="date-fields">
+                        <label>
+                            Start date
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(event) => setStartDate(event.target.value)}
+                                required
+                            />
+                        </label>
 
-                <label>
-                    End date
-                    <input
-                        type="date"
-                        value={endDate}
-                        min={startDate}
-                        onChange={(event) => setEndDate(event.target.value)}
-                        required
-                    />
-                </label>
+                        <label>
+                            End date
+                            <input
+                                type="date"
+                                value={endDate}
+                                min={startDate}
+                                onChange={(event) => setEndDate(event.target.value)}
+                                required
+                            />
+                        </label>
+                    </div>
 
-                <label>
-                    Reason
-                    <textarea
-                        value={reason}
-                        onChange={(event) => setReason(event.target.value)}
-                        rows={3}
-                        required
-                    />
-                </label>
+                    <label>
+                        Reason
+                        <textarea
+                            value={reason}
+                            onChange={(event) => setReason(event.target.value)}
+                            rows={3}
+                            required
+                        />
+                    </label>
 
-                <button
-                    type="submit"
-                    disabled={busy || requestsLoading}
-                >
-                    Submit
-                </button>
-            </form>
+                    <button
+                        className="button button-primary"
+                        type="submit"
+                        disabled={busy || requestsLoading}
+                    >
+                        Submit
+                    </button>
+                </form>
+            </section>
 
-            <h3>My requests</h3>
+            <section className="card" aria-labelledby="member-requests-title">
+                <div className="card-header">
+                    <h3 id="member-requests-title">My requests</h3>
+                    <p className="text-muted">Your submitted requests and their current status.</p>
+                </div>
 
-            {requestsLoading ? (
-                <p>Loading requests...</p>
-            ) : leaveRequests === null ? (
-                <p>Request list unavailable. Please refresh the page.</p>
-            ) : leaveRequests.length === 0 ? (
-                <p>No leave requests yet.</p>
-            ) : (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Start date</th>
-                            <th>End date</th>
-                            <th>Reason</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {leaveRequests.map((request) => (
-                            <tr key={request.id}>
-                                <td>{formatDate(request.start_date)}</td>
-                                <td>{formatDate(request.end_date)}</td>
-                                <td>{request.reason}</td>
-                                <td>{request.status}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
-        </section>
+                {requestsLoading ? (
+                    <p className="state-message">Loading requests...</p>
+                ) : leaveRequests === null ? (
+                    <p className="state-message">Request list unavailable. Please refresh the page.</p>
+                ) : leaveRequests.length === 0 ? (
+                    <p className="state-message">No leave requests yet.</p>
+                ) : (
+                    <div className="table-scroll" role="region" aria-label="My requests table" tabIndex={0}>
+                        <table className="member-requests-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col" className="date-cell">Start date</th>
+                                    <th scope="col" className="date-cell">End date</th>
+                                    <th scope="col">Reason</th>
+                                    <th scope="col">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {leaveRequests.map((request) => (
+                                    <tr key={request.id}>
+                                        <td className="date-cell">{formatDate(request.start_date)}</td>
+                                        <td className="date-cell">{formatDate(request.end_date)}</td>
+                                        <td className="reason-cell">{request.reason}</td>
+                                        <td>
+                                            <span className={`status-badge status-${request.status}`}>
+                                                {request.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </section>
+        </div>
     );
 }

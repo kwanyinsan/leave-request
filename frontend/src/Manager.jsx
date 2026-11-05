@@ -234,129 +234,158 @@ export default function Manager({ busy, setBusy, setUser, setMessage }) {
     }
 
     return (
-        <section>
-            <h3>All leave requests</h3>
+        <div className="manager-layout">
+            <section className="card" aria-labelledby="manager-requests-title">
+                <div className="card-header">
+                    <h3 id="manager-requests-title">All leave requests</h3>
+                    <p className="text-muted">Review requests and update their status.</p>
+                </div>
 
-            {requestsLoading ? (
-                <p>Loading requests...</p>
-            ) : leaveRequests === null ? (
-                <p>Request list unavailable. Please refresh the page.</p>
-            ) : leaveRequests.length === 0 ? (
-                <p>No leave requests yet.</p>
-            ) : (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Applicant</th>
-                            <th>Start date</th>
-                            <th>End date</th>
-                            <th>Reason</th>
-                            <th>Status</th>
-                            <th>Change status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {leaveRequests.map((request) => (
-                            <tr key={request.id}>
-                                <td>{request.username}</td>
-                                <td>{formatDate(request.start_date)}</td>
-                                <td>{formatDate(request.end_date)}</td>
-                                <td>{request.reason}</td>
-                                <td>{request.status}</td>
-                                <td>
-                                    {request.user_is_deleted ? (
-                                        'User account deleted'
-                                    ) : (
-                                        <>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleStatusChange(request.id, 'approved')}
-                                                disabled={busy}
-                                            >
-                                                Approve
-                                            </button>
+                {requestsLoading ? (
+                    <p className="state-message">Loading requests...</p>
+                ) : leaveRequests === null ? (
+                    <p className="state-message">Request list unavailable. Please refresh the page.</p>
+                ) : leaveRequests.length === 0 ? (
+                    <p className="state-message">No leave requests yet.</p>
+                ) : (
+                    <div className="table-scroll" role="region" aria-label="All leave requests table" tabIndex={0}>
+                        <table className="manager-requests-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Applicant</th>
+                                    <th scope="col" className="date-cell">Start date</th>
+                                    <th scope="col" className="date-cell">End date</th>
+                                    <th scope="col">Reason</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Change status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {leaveRequests.map((request) => (
+                                    <tr key={request.id}>
+                                        <td className="applicant-cell">{request.username}</td>
+                                        <td className="date-cell">{formatDate(request.start_date)}</td>
+                                        <td className="date-cell">{formatDate(request.end_date)}</td>
+                                        <td className="reason-cell">{request.reason}</td>
+                                        <td>
+                                            <span className={`status-badge status-${request.status}`}>
+                                                {request.status}
+                                            </span>
+                                        </td>
+                                        <td className="action-cell">
+                                            {request.user_is_deleted ? (
+                                                <span className="text-muted">User account deleted</span>
+                                            ) : (
+                                                <div className="request-actions">
+                                                    <button
+                                                        className="button button-primary button-small"
+                                                        type="button"
+                                                        onClick={() => handleStatusChange(request.id, 'approved')}
+                                                        disabled={busy}
+                                                    >
+                                                        Approve
+                                                    </button>
 
-                                            <button
-                                                type="button"
-                                                onClick={() => handleStatusChange(request.id, 'rejected')}
-                                                disabled={busy}
-                                            >
-                                                Reject
-                                            </button>
+                                                    <button
+                                                        className="button button-danger-outline button-small"
+                                                        type="button"
+                                                        onClick={() => handleStatusChange(request.id, 'rejected')}
+                                                        disabled={busy}
+                                                    >
+                                                        Reject
+                                                    </button>
 
-                                            <button
-                                                type="button"
-                                                onClick={() => handleStatusChange(request.id, 'pending')}
-                                                disabled={busy}
-                                            >
-                                                Set pending
-                                            </button>
-                                        </>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                                                    <button
+                                                        className="button button-secondary button-small"
+                                                        type="button"
+                                                        onClick={() => handleStatusChange(request.id, 'pending')}
+                                                        disabled={busy}
+                                                    >
+                                                        Set pending
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </section>
 
-            <h3>Members</h3>
+            <div className="manager-secondary-grid">
+                <section className="card" aria-labelledby="members-title">
+                    <div className="card-header">
+                        <h3 id="members-title">Members</h3>
+                        <p className="text-muted">Member accounts and their current account status.</p>
+                    </div>
 
-            {membersLoading ? (
-                <p>Loading members...</p>
-            ) : members === null ? (
-                <p>Member list unavailable. Please refresh the page.</p>
-            ) : members.length === 0 ? (
-                <p>No member accounts yet.</p>
-            ) : (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Member ID</th>
-                            <th>Username</th>
-                            <th>Account status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {members.map((member) => (
-                            <tr key={member.id}>
-                                <td>{member.id}</td>
-                                <td>{member.username}</td>
-                                <td>
-                                    {member.is_deleted ? 'Deleted' : 'Active'}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                    {membersLoading ? (
+                        <p className="state-message">Loading members...</p>
+                    ) : members === null ? (
+                        <p className="state-message">Member list unavailable. Please refresh the page.</p>
+                    ) : members.length === 0 ? (
+                        <p className="state-message">No member accounts yet.</p>
+                    ) : (
+                        <div className="table-scroll" role="region" aria-label="Members table" tabIndex={0}>
+                            <table className="members-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Member ID</th>
+                                        <th scope="col">Username</th>
+                                        <th scope="col">Account status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {members.map((member) => (
+                                        <tr key={member.id}>
+                                            <td className="id-cell">{member.id}</td>
+                                            <td className="applicant-cell">{member.username}</td>
+                                            <td>
+                                                <span className={`status-badge ${member.is_deleted ? 'status-deleted' : 'status-approved'}`}>
+                                                    {member.is_deleted ? 'Deleted' : 'Active'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </section>
 
-            <h3>Delete member</h3>
+                <section className="card" aria-labelledby="delete-member-title">
+                    <div className="card-header">
+                        <h3 id="delete-member-title">Delete member</h3>
+                        <p className="text-muted">
+                            Deleting a member disables their account and preserves
+                            their leave requests.
+                        </p>
+                    </div>
 
-            <p>
-                Deleting a member disables their account and preserves
-                their leave requests.
-            </p>
+                    <form className="card-body form-stack" onSubmit={handleDelete}>
+                        <label>
+                            Member ID
+                            <input
+                                type="text"
+                                value={memberId}
+                                onChange={(event) => setMemberId(event.target.value)}
+                                disabled={busy}
+                                required
+                            />
+                        </label>
 
-            <form onSubmit={handleDelete}>
-                <label>
-                    Member ID
-                    <input
-                        type="text"
-                        value={memberId}
-                        onChange={(event) => setMemberId(event.target.value)}
-                        disabled={busy}
-                        required
-                    />
-                </label>
-
-                <button
-                    type="submit"
-                    disabled={busy || membersLoading}
-                >
-                    Delete
-                </button>
-            </form>
-        </section>
+                        <button
+                            className="button button-danger"
+                            type="submit"
+                            disabled={busy || membersLoading}
+                        >
+                            Delete
+                        </button>
+                    </form>
+                </section>
+            </div>
+        </div>
     );
 }
